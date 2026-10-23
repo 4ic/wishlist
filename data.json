@@ -399,7 +399,7 @@
    "drive": "3/8\"",
    "spec": "200 mm",
    "price": "$25.55",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B08DR729MR",
    "image": "images/tone/DH30.png"
@@ -607,7 +607,7 @@
    "drive": "1/2\"",
    "spec": "11 mm",
    "price": "$19.79",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B001RWCFLW",
    "image": "images/tone/4S-11.png"
@@ -620,7 +620,7 @@
    "drive": "1/2\"",
    "spec": "15 mm",
    "price": "$19.79",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B001L7QGAY",
    "image": "images/tone/4S-15.png"
@@ -633,7 +633,7 @@
    "drive": "1/2\"",
    "spec": "16 mm",
    "price": "$17.57",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B001L7TQMO",
    "image": "images/tone/4S-16.png"
@@ -646,7 +646,7 @@
    "drive": "1/2\"",
    "spec": "18 mm",
    "price": "$16.64",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B001L7O3YA",
    "image": "images/tone/4S-18.png"
@@ -659,7 +659,7 @@
    "drive": "1/2\"",
    "spec": "20 mm",
    "price": "$19.79",
-   "status": "Shortlist",
+   "status": "Purchased",
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B001L7VGMW",
    "image": "images/tone/4S-20.png"
