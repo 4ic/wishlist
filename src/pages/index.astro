@@ -16,22 +16,10 @@ const milwaukee = data.milwaukee as Item[];
 const DRIVES: Record<string, string> = { '14': '1/4"', '38': '3/8"', '12': '1/2"' };
 const driveOf = (r: Item) => r.drive ?? DRIVES[r.sku.match(/[FR](14|38|12)(?:-|$)/)?.[1] ?? ''] ?? '';
 
-// group items in file order
-function groupBy(items: Item[], key: (r: Item) => string) {
-  const out: { name: string; items: Item[] }[] = [];
-  for (const r of items) {
-    const k = key(r);
-    const last = out[out.length - 1];
-    if (last && last.name === k) last.items.push(r);
-    else out.push({ name: k, items: [r] });
-  }
-  return out;
-}
-const toneGroups = groupBy(tone, (r) => `${r.group} ${r.type}`.trim());
-const milGroups = groupBy(milwaukee, (r) => r.group);
-const sections = [
-  { id: 'tone', title: 'TONE', groups: toneGroups, isTone: true },
-  { id: 'milwaukee', title: 'Milwaukee', groups: milGroups, isTone: false },
+// one flat list, file order; category label shown on each card
+const items = [
+  ...tone.map((r) => ({ ...r, brandName: 'TONE', cat: `${r.group} ${r.type}`.trim() })),
+  ...milwaukee.map((r) => ({ ...r, brandName: 'Milwaukee', cat: r.group })),
 ];
 
 const filters = [
@@ -48,61 +36,58 @@ const filters = [
     <title>Tool wishlist — TONE & Milwaukee</title>
   </head>
   <body>
-    <div class="filters">
-      {filters.map((f) => (
-        <div class="row" data-filter={f.key}>
-          <span class="lbl">{f.label}</span>
-          <button type="button" data-value="" aria-pressed="true">All</button>
-          {f.options.map((o) => <button type="button" data-value={o} aria-pressed="false">{o}</button>)}
-        </div>
-      ))}
-      <input type="search" id="q" placeholder="Search SKU or name…" />
-      <span class="count" id="count"></span>
-    </div>
     <main>
-      {sections.map((sec) => (
-        <section data-section>
-          <h2 id={sec.id}>{sec.title}</h2>
-          {sec.groups.map((g) => (
-            <div class="group" data-group>
-              <h3>{g.name}</h3>
-              <div class="grid">
-                {g.items.map((r) => {
-                  const isBought = r.status === 'Purchased';
-                  const sub = sec.isTone ? `${r.drive} · ${r.group} ${r.type}` : `US ${r.us_code} · ${r.type}`;
-                  return (
-                    <a
-                      class:list={['card', { bought: isBought }]}
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener"
-                      data-brand={sec.title}
-                      data-status={r.status}
-                      data-drive={driveOf(r)}
-                      data-text={`${r.sku} ${r.us_code ?? ''} ${r.group} ${r.type} ${r.spec}`.toLowerCase()}
-                    >
-                      <div class="img"><img src={'/' + r.image} alt={r.sku} loading="lazy" /></div>
-                      <div class="sku">{r.sku}</div>
-                      <div class="sub">{sub}</div>
-                      <div class="spec">{r.spec}</div>
-                      <div class="price">{isBought ? 'Purchased' : r.price}</div>
-                      <div class="src">{r.source}</div>
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </section>
-      ))}
+      <div class="filters">
+        {filters.map((f) => (
+          <div class="row" data-filter={f.key}>
+            <span class="lbl">{f.label}</span>
+            <button type="button" data-value="" aria-pressed="true">All</button>
+            {f.options.map((o) => <button type="button" data-value={o} aria-pressed="false">{o}</button>)}
+          </div>
+        ))}
+        <select id="sort" aria-label="Sort">
+          <option value="">Sort: Default</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="sku">SKU: A–Z</option>
+        </select>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="grid">
+        {items.map((r, i) => {
+          const isBought = r.status === 'Purchased';
+          const sub = r.brandName === 'TONE' ? r.drive : `US ${r.us_code} · ${r.type}`;
+          return (
+            <a
+              class:list={['card', { bought: isBought }]}
+              href={r.url}
+              target="_blank"
+              rel="noopener"
+              data-brand={r.brandName}
+              data-status={r.status}
+              data-drive={driveOf(r)}
+              data-i={i}
+              data-price={Number(r.price.replace(/[^0-9.]/g, '')) || 0}
+              data-sku={r.sku}
+            >
+              <div class="img"><img src={'/' + r.image} alt={r.sku} loading="lazy" /></div>
+              <div class="cat">{r.brandName} {r.cat}</div>
+              <div class="sku">{r.sku}</div>
+              <div class="sub">{sub}</div>
+              <div class="spec">{r.spec}</div>
+              <div class="price">{isBought ? 'Purchased' : r.price}</div>
+              <div class="src">{r.source}</div>
+            </a>
+          );
+        })}
+      </div>
       <p class="empty" id="empty" hidden>No items match these filters.</p>
     </main>
 
     <script>
-      const state: Record<string, string> = { brand: '', status: '', drive: '', q: '' };
+      const state: Record<string, string> = { brand: '', status: '', drive: '' };
       const cards = [...document.querySelectorAll<HTMLElement>('.card')];
       const count = document.getElementById('count')!;
-      const q = document.getElementById('q') as HTMLInputElement;
 
       function apply() {
         let shown = 0;
@@ -111,14 +96,10 @@ const filters = [
           const ok =
             (!state.brand || d.brand === state.brand) &&
             (!state.status || d.status === state.status) &&
-            (!state.drive || d.drive === state.drive) &&
-            (!state.q || state.q.split(/\s+/).every((w) => d.text!.includes(w)));
+            (!state.drive || d.drive === state.drive);
           c.hidden = !ok;
           if (ok) shown++;
         }
-        document.querySelectorAll<HTMLElement>('[data-group],[data-section]').forEach((el) => {
-          el.hidden = !el.querySelector('.card:not([hidden])');
-        });
         document.getElementById('empty')!.hidden = shown > 0;
         count.textContent = `${shown} of ${cards.length} items`;
       }
@@ -132,9 +113,18 @@ const filters = [
           apply();
         });
       });
-      q.addEventListener('input', () => {
-        state.q = q.value.trim().toLowerCase();
-        apply();
+      const grid = document.querySelector<HTMLElement>('main .grid')!;
+      const sortSel = document.getElementById('sort') as HTMLSelectElement;
+      sortSel.addEventListener('change', () => {
+        const v = sortSel.value;
+        const key = (c: HTMLElement) => Number(c.dataset.price);
+        const noPrice = (a: HTMLElement, b: HTMLElement) => +!key(a) - +!key(b); // unpriced items last
+        const sorted = [...cards].sort((a, b) =>
+          v === 'price-asc' ? noPrice(a, b) || key(a) - key(b) || +a.dataset.i! - +b.dataset.i!
+          : v === 'price-desc' ? noPrice(a, b) || key(b) - key(a) || +a.dataset.i! - +b.dataset.i!
+          : v === 'sku' ? a.dataset.sku!.localeCompare(b.dataset.sku!, undefined, { numeric: true })
+          : +a.dataset.i! - +b.dataset.i!);
+        grid.append(...sorted);
       });
       apply();
     </script>

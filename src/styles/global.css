@@ -3,16 +3,17 @@
 * { box-sizing: border-box; }
 body { margin:0; font:15px/1.4 system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--fg); }
 
-.filters { position:sticky; top:0; z-index:5; background:var(--bg); display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; padding:12px 24px; border-bottom:1px solid #8883; }
+.filters { position:sticky; top:0; z-index:5; background:var(--bg); display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; padding:12px 0; margin-bottom:12px; }
 .filters .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
 .filters .lbl { font-size:12px; color:var(--mut); margin-right:2px; text-transform:uppercase; letter-spacing:.04em; }
 .filters button { font:inherit; font-size:13px; padding:5px 11px; border-radius:999px; border:1px solid #8886; background:transparent; color:var(--fg); cursor:pointer; }
 .filters button:hover { border-color:var(--fg); }
 .filters button[aria-pressed="true"] { background:var(--fg); color:var(--bg); border-color:var(--fg); }
-.filters input { font:inherit; font-size:13px; padding:5px 11px; border-radius:999px; border:1px solid #8886; background:transparent; color:var(--fg); min-width:160px; }
+.filters select { font:inherit; font-size:13px; padding:5px 30px 5px 12px; border-radius:999px; border:1px solid #8886; color:var(--fg); cursor:pointer; appearance:none; -webkit-appearance:none; background-color:var(--bg); background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%); background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%; background-size:5px 5px; background-repeat:no-repeat; }
+.filters select:hover { border-color:var(--fg); }
 .filters .count { font-size:13px; color:var(--mut); margin-left:auto; }
 
-main { padding:8px 24px 40px; max-width:1400px; margin:auto; }
+main { padding:24px 24px 40px; max-width:1400px; margin:auto; }
 h2 { border-left:6px solid var(--red); padding-left:10px; margin-top:32px; }
 h3 { margin:24px 0 8px; font-size:16px; color:var(--mut); }
 .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
@@ -21,6 +22,7 @@ h3 { margin:24px 0 8px; font-size:16px; color:var(--mut); }
 .card.bought { border-color:var(--grn); }
 .img { height:150px; display:flex; align-items:center; justify-content:center; }
 .img img { max-width:100%; max-height:150px; }
+.cat { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--fg); margin-top:8px; }
 .sku { font-weight:700; font-size:17px; margin-top:8px; }
 .sub, .spec, .src { font-size:13px; color:var(--mut); }
 .price { font-weight:700; color:var(--red); font-size:18px; margin-top:6px; }
