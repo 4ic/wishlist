@@ -4,28 +4,37 @@ import data from '../../data.json';
 
 type Item = {
   brand: string; sku: string; us_code?: string; group: string; type: string;
-  drive?: string; spec: string; price: string; status: string; source: string;
+  drive?: string; blade?: string; color?: string; spec: string; price: string; status: string; source: string;
   url: string; image: string;
 };
 
 const tone = data.tone as Item[];
 const milwaukee = data.milwaukee as Item[];
+const other = (data.other ?? []) as Item[];
 
 
 // drive size: TONE has it in data; Milwaukee is read from the model code (F14 / F38 / F12 / R38)
 const DRIVES: Record<string, string> = { '14': '1/4"', '38': '3/8"', '12': '1/2"' };
 const driveOf = (r: Item) => r.drive ?? DRIVES[r.sku.match(/[FR](14|38|12)(?:-|$)/)?.[1] ?? ''] ?? '';
 
+// size pill colours: 1/4" blue, 3/8" green, 1/2" orange (others neutral)
+const DRIVE_CLASS: Record<string, string> = { '1/4"': 'd14', '3/8"': 'd38', '1/2"': 'd12' };
+
 // one flat list, file order; category label shown on each card
 const items = [
   ...tone.map((r) => ({ ...r, brandName: 'TONE', cat: `${r.group} ${r.type}`.trim() })),
   ...milwaukee.map((r) => ({ ...r, brandName: 'Milwaukee', cat: r.group })),
+  ...other.map((r) => ({ ...r, brandName: r.brand, cat: r.group })),
 ];
 
-const filters = [
-  { key: 'brand', label: 'Brand', options: ['TONE', 'Milwaukee'] },
-  { key: 'status', label: 'Status', options: ['Purchased', 'Shortlist'] },
-  { key: 'drive', label: 'Drive', options: ['1/4"', '3/8"', '1/2"'] },
+// each filter: buttons as [value, label]; `def` is the value selected on load
+// Status "Active" (default) hides items tagged Later
+type Filter = { key: string; label: string; options: [string, string][]; def: string };
+const opts = (vals: string[]) => vals.map((v): [string, string] => [v, v]);
+const filters: Filter[] = [
+  { key: 'brand', label: 'Brand', options: [['', 'All'], ...opts([...new Set(items.map((r) => r.brandName))])], def: '' },
+  { key: 'status', label: 'Status', options: [['active', 'Active'], ...opts(['Purchased', 'Shortlist', 'Later']), ['', 'All']], def: 'active' },
+  { key: 'drive', label: 'Drive', options: [['', 'All'], ...opts(['1/4"', '3/8"', '1/2"'])], def: '' },
 ];
 ---
 <!doctype html>
@@ -33,16 +42,15 @@ const filters = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Tool wishlist — TONE & Milwaukee</title>
+    <title>Tool wishlist</title>
   </head>
   <body>
     <main>
       <div class="filters">
         {filters.map((f) => (
-          <div class="row" data-filter={f.key}>
+          <div class="row" data-filter={f.key} data-def={f.def}>
             <span class="lbl">{f.label}</span>
-            <button type="button" data-value="" aria-pressed="true">All</button>
-            {f.options.map((o) => <button type="button" data-value={o} aria-pressed="false">{o}</button>)}
+            {f.options.map(([v, l]) => <button type="button" data-value={v} aria-pressed={String(v === f.def)}>{l}</button>)}
           </div>
         ))}
         <select id="sort" aria-label="Sort">
@@ -56,7 +64,8 @@ const filters = [
       <div class="grid">
         {items.map((r, i) => {
           const isBought = r.status === 'Purchased';
-          const sub = r.brandName === 'TONE' ? r.drive : `US ${r.us_code} · ${r.type}`;
+          const size = driveOf(r) || r.blade || '';
+          const sub = r.brandName === 'TONE' ? '' : r.us_code ? `US ${r.us_code} · ${r.type}` : r.type;
           return (
             <a
               class:list={['card', { bought: isBought }]}
@@ -70,10 +79,16 @@ const filters = [
               data-price={Number(r.price.replace(/[^0-9.]/g, '')) || 0}
               data-sku={r.sku}
             >
+              {r.status === 'Later' && <span class="tag later">Later</span>}
               <div class="img"><img src={'/' + r.image} alt={r.sku} loading="lazy" /></div>
               <div class="cat">{r.brandName} {r.cat}</div>
               <div class="sku">{r.sku}</div>
-              <div class="sub">{sub}</div>
+              <div class="sub">{size && (
+                  <span
+                    class:list={['badge', !r.color && DRIVE_CLASS[size]]}
+                    style={r.color ? `background:${r.color};color:${r.color === '#f2b300' ? '#141414' : '#fff'}` : undefined}
+                  >{size}</span>
+                )}{sub}</div>
               <div class="spec">{r.spec}</div>
               <div class="price">{isBought ? 'Purchased' : r.price}</div>
               <div class="src">{r.source}</div>
@@ -85,7 +100,8 @@ const filters = [
     </main>
 
     <script>
-      const state: Record<string, string> = { brand: '', status: '', drive: '' };
+      const state: Record<string, string> = {};
+      document.querySelectorAll<HTMLElement>('[data-filter]').forEach((r) => (state[r.dataset.filter!] = r.dataset.def ?? ''));
       const cards = [...document.querySelectorAll<HTMLElement>('.card')];
       const count = document.getElementById('count')!;
 
@@ -95,7 +111,7 @@ const filters = [
           const d = c.dataset;
           const ok =
             (!state.brand || d.brand === state.brand) &&
-            (!state.status || d.status === state.status) &&
+            (!state.status || (state.status === 'active' ? d.status !== 'Later' : d.status === state.status)) &&
             (!state.drive || d.drive === state.drive);
           c.hidden = !ok;
           if (ok) shown++;
