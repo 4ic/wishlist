@@ -1,0 +1,153 @@
+---
+import '../styles/global.css';
+import data from '../../data.json';
+
+type Item = {
+  brand: string; sku: string; us_code?: string; group: string; type: string;
+  drive?: string; spec: string; price: string; status: string; source: string;
+  url: string; image: string;
+};
+
+const tone = data.tone as Item[];
+const milwaukee = data.milwaukee as Item[];
+
+const num = (p: string) => Number(p.replace(/[^0-9.]/g, '')) || 0;
+const bought = tone.filter((r) => r.status === 'Purchased');
+const milTotal = milwaukee.reduce((s, r) => s + num(r.price), 0);
+const money = (n: number) => '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// drive size: TONE has it in data; Milwaukee is read from the model code (F14 / F38 / F12 / R38)
+const DRIVES: Record<string, string> = { '14': '1/4"', '38': '3/8"', '12': '1/2"' };
+const driveOf = (r: Item) => r.drive ?? DRIVES[r.sku.match(/[FR](14|38|12)(?:-|$)/)?.[1] ?? ''] ?? '';
+
+// group items in file order
+function groupBy(items: Item[], key: (r: Item) => string) {
+  const out: { name: string; items: Item[] }[] = [];
+  for (const r of items) {
+    const k = key(r);
+    const last = out[out.length - 1];
+    if (last && last.name === k) last.items.push(r);
+    else out.push({ name: k, items: [r] });
+  }
+  return out;
+}
+const toneGroups = groupBy(tone, (r) => `${r.group} ${r.type}`.trim());
+const milGroups = groupBy(milwaukee, (r) => r.group);
+const sections = [
+  { id: 'tone', title: 'TONE', groups: toneGroups, isTone: true },
+  { id: 'milwaukee', title: 'Milwaukee', groups: milGroups, isTone: false },
+];
+
+const filters = [
+  { key: 'brand', label: 'Brand', options: ['TONE', 'Milwaukee'] },
+  { key: 'status', label: 'Status', options: ['Purchased', 'Shortlist'] },
+  { key: 'drive', label: 'Drive', options: ['1/4"', '3/8"', '1/2"'] },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tool wishlist — TONE & Milwaukee</title>
+  </head>
+  <body>
+    <header>
+      <h1>Tool wishlist — TONE & Milwaukee</h1>
+      <p>
+        {tone.length} TONE items ({bought.length} purchased) ·
+        {milwaukee.length} Milwaukee items ({money(milTotal)})
+      </p>
+    </header>
+    <div class="filters">
+      {filters.map((f) => (
+        <div class="row" data-filter={f.key}>
+          <span class="lbl">{f.label}</span>
+          <button type="button" data-value="" aria-pressed="true">All</button>
+          {f.options.map((o) => <button type="button" data-value={o} aria-pressed="false">{o}</button>)}
+        </div>
+      ))}
+      <input type="search" id="q" placeholder="Search SKU or name…" />
+      <span class="count" id="count"></span>
+    </div>
+    <main>
+      {sections.map((sec) => (
+        <section data-section>
+          <h2 id={sec.id}>{sec.title}</h2>
+          {sec.groups.map((g) => (
+            <div class="group" data-group>
+              <h3>{g.name}</h3>
+              <div class="grid">
+                {g.items.map((r) => {
+                  const isBought = r.status === 'Purchased';
+                  const sub = sec.isTone ? `${r.drive} · ${r.group} ${r.type}` : `US ${r.us_code} · ${r.type}`;
+                  return (
+                    <a
+                      class:list={['card', { bought: isBought }]}
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener"
+                      data-brand={sec.title}
+                      data-status={r.status}
+                      data-drive={driveOf(r)}
+                      data-text={`${r.sku} ${r.us_code ?? ''} ${r.group} ${r.type} ${r.spec}`.toLowerCase()}
+                    >
+                      <div class="img"><img src={'/' + r.image} alt={r.sku} loading="lazy" /></div>
+                      <div class="sku">{r.sku}</div>
+                      <div class="sub">{sub}</div>
+                      <div class="spec">{r.spec}</div>
+                      <div class="price">{isBought ? 'Purchased' : r.price}</div>
+                      <div class="src">{r.source}</div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </section>
+      ))}
+      <p class="empty" id="empty" hidden>No items match these filters.</p>
+    </main>
+
+    <script>
+      const state: Record<string, string> = { brand: '', status: '', drive: '', q: '' };
+      const cards = [...document.querySelectorAll<HTMLElement>('.card')];
+      const count = document.getElementById('count')!;
+      const q = document.getElementById('q') as HTMLInputElement;
+
+      function apply() {
+        let shown = 0;
+        for (const c of cards) {
+          const d = c.dataset;
+          const ok =
+            (!state.brand || d.brand === state.brand) &&
+            (!state.status || d.status === state.status) &&
+            (!state.drive || d.drive === state.drive) &&
+            (!state.q || state.q.split(/\s+/).every((w) => d.text!.includes(w)));
+          c.hidden = !ok;
+          if (ok) shown++;
+        }
+        document.querySelectorAll<HTMLElement>('[data-group],[data-section]').forEach((el) => {
+          el.hidden = !el.querySelector('.card:not([hidden])');
+        });
+        document.getElementById('empty')!.hidden = shown > 0;
+        count.textContent = `${shown} of ${cards.length} items`;
+      }
+
+      document.querySelectorAll<HTMLElement>('[data-filter]').forEach((row) => {
+        row.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest('button');
+          if (!btn) return;
+          row.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          state[row.dataset.filter!] = btn.dataset.value ?? '';
+          apply();
+        });
+      });
+      q.addEventListener('input', () => {
+        state.q = q.value.trim().toLowerCase();
+        apply();
+      });
+      apply();
+    </script>
+  </body>
+</html>
