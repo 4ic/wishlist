@@ -11,10 +11,6 @@ type Item = {
 const tone = data.tone as Item[];
 const milwaukee = data.milwaukee as Item[];
 
-const num = (p: string) => Number(p.replace(/[^0-9.]/g, '')) || 0;
-const bought = tone.filter((r) => r.status === 'Purchased');
-const milTotal = milwaukee.reduce((s, r) => s + num(r.price), 0);
-const money = (n: number) => '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // drive size: TONE has it in data; Milwaukee is read from the model code (F14 / F38 / F12 / R38)
 const DRIVES: Record<string, string> = { '14': '1/4"', '38': '3/8"', '12': '1/2"' };
@@ -52,13 +48,6 @@ const filters = [
     <title>Tool wishlist — TONE & Milwaukee</title>
   </head>
   <body>
-    <header>
-      <h1>Tool wishlist — TONE & Milwaukee</h1>
-      <p>
-        {tone.length} TONE items ({bought.length} purchased) ·
-        {milwaukee.length} Milwaukee items ({money(milTotal)})
-      </p>
-    </header>
     <div class="filters">
       {filters.map((f) => (
         <div class="row" data-filter={f.key}>

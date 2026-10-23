@@ -2,9 +2,6 @@
 @media (prefers-color-scheme: dark) { :root { --bg:#111; --fg:#eee; --mut:#aaa; --card:#1d1d1d; } }
 * { box-sizing: border-box; }
 body { margin:0; font:15px/1.4 system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--fg); }
-header { background:#141414; color:#fff; padding:20px 24px; }
-header h1 { margin:0; font-size:24px; }
-header p { margin:4px 0 0; color:#bbb; }
 
 .filters { position:sticky; top:0; z-index:5; background:var(--bg); display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; padding:12px 24px; border-bottom:1px solid #8883; }
 .filters .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }

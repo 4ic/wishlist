@@ -42,6 +42,19 @@
   },
   {
    "brand": "TONE",
+   "sku": "RH3HS",
+   "group": "Short",
+   "type": "Fixed / quick-turn dial",
+   "drive": "3/8\"",
+   "spec": "110 mm",
+   "price": "$28.78",
+   "status": "Shortlist",
+   "source": "Amazon AU",
+   "url": "https://www.amazon.com.au/dp/B00MIDF8Z4",
+   "image": "images/tone/RH3HS.png"
+  },
+  {
+   "brand": "TONE",
    "sku": "RH3HQS",
    "group": "Short",
    "type": "Fixed / quick-turn dial",
@@ -133,6 +146,19 @@
   },
   {
    "brand": "TONE",
+   "sku": "RH2FHL",
+   "group": "Flex head",
+   "type": "Long",
+   "drive": "1/4\"",
+   "spec": "172 mm",
+   "price": "$45.20",
+   "status": "Shortlist",
+   "source": "Amazon AU",
+   "url": "https://www.amazon.com.au/dp/B00EY6ALQ4",
+   "image": "images/tone/RH2FHL.png"
+  },
+  {
+   "brand": "TONE",
    "sku": "RH3FHL",
    "group": "Flex head",
    "type": "Long",
@@ -208,6 +234,45 @@
    "source": "Amazon AU",
    "url": "https://www.amazon.com.au/dp/B00EY6B8ZM",
    "image": "images/tone/NS3.png"
+  },
+  {
+   "brand": "TONE",
+   "sku": "NS4",
+   "group": "Breaker bar",
+   "type": "",
+   "drive": "1/2\"",
+   "spec": "400 mm",
+   "price": "$41.25",
+   "status": "Shortlist",
+   "source": "Amazon AU",
+   "url": "https://www.amazon.com.au/dp/B00EY6B92E",
+   "image": "images/tone/NS4.png"
+  },
+  {
+   "brand": "TONE",
+   "sku": "NS2L",
+   "group": "Breaker bar",
+   "type": "",
+   "drive": "1/4\"",
+   "spec": "200 mm",
+   "price": "$30.33",
+   "status": "Shortlist",
+   "source": "Amazon AU",
+   "url": "https://www.amazon.com.au/dp/B00EY6B2P8",
+   "image": "images/tone/NS2L.png"
+  },
+  {
+   "brand": "TONE",
+   "sku": "NS3L",
+   "group": "Breaker bar",
+   "type": "",
+   "drive": "3/8\"",
+   "spec": "400 mm",
+   "price": "$36.70",
+   "status": "Shortlist",
+   "source": "Amazon AU",
+   "url": "https://www.amazon.com.au/dp/B00EY6B974",
+   "image": "images/tone/NS3L.png"
   },
   {
    "brand": "TONE",
